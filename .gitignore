@@ -1,0 +1,28 @@
+# Compiled class files
+out/
+*.class
+
+# Data files generated at runtime
+library_items.txt
+library_users.txt
+
+# PDF specification
+*.pdf
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+.project
+.classpath
+.settings/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Markdown report (keep only README)
+SLCAS_Project_Report.md

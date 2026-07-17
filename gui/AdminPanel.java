@@ -14,10 +14,9 @@ public class AdminPanel extends JPanel {
     private MainWindow mainWindow;
 
     private JComboBox<String> typeCombo;
-    private CardLayout cardLayout;
-    private JPanel formCards;
 
     private JTextField titleField, authorField, yearField, extra1Field, extra2Field;
+    private JLabel extra1Label, extra2Label;
     private JTextField deleteIdField;
 
     public AdminPanel(LibraryManager libraryManager, ViewItemsPanel viewItemsPanel, MainWindow mainWindow) {
@@ -28,37 +27,59 @@ public class AdminPanel extends JPanel {
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
+        // ===== ADD SECTION =====
         JPanel addSection = new JPanel(new BorderLayout());
         addSection.setBorder(BorderFactory.createTitledBorder("Add New Item"));
 
         typeCombo = new JComboBox<>(new String[]{"Book", "Magazine", "Journal"});
         typeCombo.setToolTipText("Select the type of library item to add");
-        typeCombo.addActionListener(e -> {
-            cardLayout.show(formCards, (String) typeCombo.getSelectedItem());
-            updateExtraLabels();
-        });
+        typeCombo.addActionListener(e -> updateExtraLabels());
 
         JPanel typePanel = new JPanel();
         typePanel.add(new JLabel("Item Type:"));
         typePanel.add(typeCombo);
         addSection.add(typePanel, BorderLayout.NORTH);
 
-        titleField = new JTextField(15);
+        // Single form panel (no CardLayout) — all fields always visible
+        titleField = new JTextField(20);
         titleField.setToolTipText("Enter item title");
-        authorField = new JTextField(15);
+        authorField = new JTextField(20);
         authorField.setToolTipText("Enter author/editor name");
-        yearField = new JTextField(6);
+        yearField = new JTextField(8);
         yearField.setToolTipText("Enter publication year (e.g. 2024)");
-        extra1Field = new JTextField(12);
-        extra2Field = new JTextField(12);
+        extra1Field = new JTextField(15);
+        extra2Field = new JTextField(15);
 
-        // Dynamic form using CardLayout (switching fields based on item type)
-        cardLayout = new CardLayout();
-        formCards = new JPanel(cardLayout);
-        formCards.add(buildDynamicForm("ISBN", "Genre"), "Book");
-        formCards.add(buildDynamicForm("Issue Number", "Publisher"), "Magazine");
-        formCards.add(buildDynamicForm("Volume", "Field of Study"), "Journal");
-        addSection.add(formCards, BorderLayout.CENTER);
+        extra1Label = new JLabel("ISBN:");
+        extra2Label = new JLabel("Genre:");
+
+        JPanel formPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(4, 4, 4, 4);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.WEST;
+
+        gbc.gridx = 0; gbc.gridy = 0; formPanel.add(new JLabel("Title:"), gbc);
+        gbc.gridx = 1; gbc.weightx = 1.0; formPanel.add(titleField, gbc);
+        gbc.weightx = 0;
+
+        gbc.gridx = 0; gbc.gridy = 1; formPanel.add(new JLabel("Author:"), gbc);
+        gbc.gridx = 1; gbc.weightx = 1.0; formPanel.add(authorField, gbc);
+        gbc.weightx = 0;
+
+        gbc.gridx = 0; gbc.gridy = 2; formPanel.add(new JLabel("Year:"), gbc);
+        gbc.gridx = 1; gbc.weightx = 1.0; formPanel.add(yearField, gbc);
+        gbc.weightx = 0;
+
+        gbc.gridx = 0; gbc.gridy = 3; formPanel.add(extra1Label, gbc);
+        gbc.gridx = 1; gbc.weightx = 1.0; formPanel.add(extra1Field, gbc);
+        gbc.weightx = 0;
+
+        gbc.gridx = 0; gbc.gridy = 4; formPanel.add(extra2Label, gbc);
+        gbc.gridx = 1; gbc.weightx = 1.0; formPanel.add(extra2Field, gbc);
+        gbc.weightx = 0;
+
+        addSection.add(formPanel, BorderLayout.CENTER);
 
         JButton addBtn = new JButton("Add Item");
         addBtn.setMnemonic('A');
@@ -68,6 +89,7 @@ public class AdminPanel extends JPanel {
 
         add(addSection, BorderLayout.NORTH);
 
+        // ===== ACTION SECTION =====
         JPanel actionSection = new JPanel(new FlowLayout());
         deleteIdField = new JTextField(10);
         deleteIdField.setToolTipText("Enter the ID of the item to delete");
@@ -96,6 +118,7 @@ public class AdminPanel extends JPanel {
 
         add(actionSection, BorderLayout.CENTER);
 
+        // ===== REPORT SECTION =====
         JPanel reportSection = new JPanel(new FlowLayout());
         reportSection.setBorder(BorderFactory.createTitledBorder("Reports"));
         JButton mostBorrowedBtn = new JButton("Most Borrowed Report");
@@ -116,41 +139,30 @@ public class AdminPanel extends JPanel {
         reportSection.add(overdueBtn);
         reportSection.add(categoryBtn);
         add(reportSection, BorderLayout.SOUTH);
+
+        // Set initial labels
+        updateExtraLabels();
     }
 
-    private JPanel buildDynamicForm(String label1, String label2) {
-        JPanel p = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(4, 4, 4, 4);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-
-        gbc.gridx = 0; gbc.gridy = 0; p.add(new JLabel("Title:"), gbc);
-        gbc.gridx = 1; p.add(titleField, gbc);
-        gbc.gridx = 0; gbc.gridy = 1; p.add(new JLabel("Author:"), gbc);
-        gbc.gridx = 1; p.add(authorField, gbc);
-        gbc.gridx = 0; gbc.gridy = 2; p.add(new JLabel("Year:"), gbc);
-        gbc.gridx = 1; p.add(yearField, gbc);
-        gbc.gridx = 0; gbc.gridy = 3; p.add(new JLabel(label1 + ":"), gbc);
-        gbc.gridx = 1; p.add(extra1Field, gbc);
-        gbc.gridx = 0; gbc.gridy = 4; p.add(new JLabel(label2 + ":"), gbc);
-        gbc.gridx = 1; p.add(extra2Field, gbc);
-
-        return p;
-    }
-
+    // Dynamic component: labels change based on selected item type
     private void updateExtraLabels() {
-        // Dynamic component update based on item type selection
         String type = (String) typeCombo.getSelectedItem();
         switch (type) {
             case "Book":
+                extra1Label.setText("ISBN:");
+                extra2Label.setText("Genre:");
                 extra1Field.setToolTipText("Enter ISBN number");
                 extra2Field.setToolTipText("Enter genre (e.g. Fiction, Science)");
                 break;
             case "Magazine":
+                extra1Label.setText("Issue Number:");
+                extra2Label.setText("Publisher:");
                 extra1Field.setToolTipText("Enter issue number");
                 extra2Field.setToolTipText("Enter publisher name");
                 break;
             case "Journal":
+                extra1Label.setText("Volume:");
+                extra2Label.setText("Field of Study:");
                 extra1Field.setToolTipText("Enter volume number");
                 extra2Field.setToolTipText("Enter field of study");
                 break;
